@@ -1,0 +1,110 @@
+// ──────────────────────────────────────────────────────────────
+// Prisma Schema — AI Resume Tailor + Job Matcher
+// ──────────────────────────────────────────────────────────────
+// Design rationale:
+//   • User is the auth root — every entity links back to a user
+//   • Resume & JobDescription are stored independently so the
+//     same resume can be compared against multiple JDs
+//   • AnalysisResult joins a (Resume, JD) pair with the AI's
+//     scoring output.  matchScore is a Float (0–100).
+//   • missingSkills is stored as a Json array — no need for a
+//     normalised skills table at this stage; keeps queries simple.
+//   • GeneratedContent is 1:1 with AnalysisResult but optional —
+//     a user might only want the score, not a full rewrite.
+// ──────────────────────────────────────────────────────────────
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User ────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // bcrypt hash
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resumes         Resume[]
+  jobDescriptions JobDescription[]
+  analysisResults AnalysisResult[]
+
+  @@map("users")
+}
+
+// ─── Resume ──────────────────────────────────────────────────
+model Resume {
+  id         String   @id @default(uuid())
+  userId     String
+  fileName   String?          // original upload filename
+  resumeText String   @db.Text // full extracted text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysisResults AnalysisResult[]
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+// ─── Job Description ─────────────────────────────────────────
+model JobDescription {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String?          // job title for quick reference
+  company   String?
+  jdText    String   @db.Text // raw JD text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysisResults AnalysisResult[]
+
+  @@index([userId])
+  @@map("job_descriptions")
+}
+
+// ─── Analysis Result ─────────────────────────────────────────
+model AnalysisResult {
+  id               String   @id @default(uuid())
+  userId           String
+  resumeId         String
+  jobDescriptionId String
+  matchScore       Float    // 0–100
+  missingSkills    Json     // string[]
+  recommendations  Json?    // string[] — optional improvement tips
+  summary          String?  @db.Text // AI-generated analysis summary
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume           Resume           @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  jobDescription   JobDescription   @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  generatedContent GeneratedContent?
+
+  @@index([userId])
+  @@index([resumeId, jobDescriptionId])
+  @@map("analysis_results")
+}
+
+// ─── Generated Content ───────────────────────────────────────
+model GeneratedContent {
+  id               String   @id @default(uuid())
+  analysisResultId String   @unique
+  generatedResume  String?  @db.Text // AI-tailored resume
+  coverLetter      String?  @db.Text // AI-generated cover letter
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  analysisResult AnalysisResult @relation(fields: [analysisResultId], references: [id], onDelete: Cascade)
+
+  @@map("generated_contents")
+}
