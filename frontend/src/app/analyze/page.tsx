@@ -7,6 +7,7 @@ import { MatchScoreGauge } from "@/components/MatchScoreGauge";
 import { SkillsGap } from "@/components/SkillsGap";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import * as api from "@/services/api";
 import { AnalysisResult, Resume } from "@/types";
 
@@ -91,7 +92,8 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="space-y-8">
+    <ProtectedRoute>
+      <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Analyze Your Resume</h1>
         <p className="text-gray-400">
@@ -205,7 +207,8 @@ export default function AnalyzePage() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 

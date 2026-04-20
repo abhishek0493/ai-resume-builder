@@ -1,25 +1,27 @@
 // ──────────────────────────────────────────────────────────────
-// Analyze Routes
+// Auth Routes
 // ──────────────────────────────────────────────────────────────
-// POST /  — Run AI analysis on a resume + job description pair
+// POST /api/auth/register   — create account + set cookie
+// POST /api/auth/login      — sign in + set cookie
+// POST /api/auth/logout     — clear cookie
+// GET  /api/auth/me         — return current user (auth-gated)
 //
-// Requires an existing resumeId (upload first) and the raw JD
-// text.  jobTitle and company are optional metadata.
+// Validation is handled by the validate() middleware using schemas
+// defined in src/validators/auth.validator.ts — controllers
+// receive only already-validated data.
 // ──────────────────────────────────────────────────────────────
 
 import { Router } from 'express';
+import { register, login, logout, me } from '../controllers/auth.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { analyzeSchema } from '../validators';
-import * as analyzeController from '../controllers/analyze.controller';
+import { registerSchema, loginSchema } from '../validators';
 
 const router = Router();
 
-router.post(
-  '/',
-  authMiddleware,
-  validate(analyzeSchema),
-  analyzeController.analyze
-);
+router.post('/register', validate(registerSchema), register);
+router.post('/login', validate(loginSchema), login);
+router.post('/logout', logout);
+router.get('/me', authMiddleware, me);
 
 export default router;

@@ -11,6 +11,7 @@
 
 import {
   ApiResponse,
+  User,
   AnalysisResult,
   Resume,
   GeneratedContent,
@@ -18,6 +19,21 @@ import {
   AnalyzePayload,
   GeneratePayload,
 } from '@/types';
+
+// ─── Auth Payload Types ──────────────────────────────────────
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+type AuthResponse = ApiResponse<{ user: User }>;
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -95,4 +111,28 @@ export async function getHistory() {
 
 export async function healthCheck() {
   return apiRequest<{ message: string; timestamp: string }>('/health');
+}
+
+// ─── Auth Endpoints ──────────────────────────────────────────
+
+export async function authRegister(payload: RegisterPayload): Promise<AuthResponse> {
+  return apiRequest<{ user: User }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function authLogin(payload: LoginPayload): Promise<AuthResponse> {
+  return apiRequest<{ user: User }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function authLogout(): Promise<ApiResponse> {
+  return apiRequest('/auth/logout', { method: 'POST' });
+}
+
+export async function authMe(): Promise<AuthResponse> {
+  return apiRequest<{ user: User }>('/auth/me');
 }

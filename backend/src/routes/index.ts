@@ -7,6 +7,7 @@
 // trivial to add new route modules.
 //
 // Route map:
+//   /api/auth/*        → auth.routes
 //   /api/resume/*      → resume.routes
 //   /api/analyze       → analyze.routes
 //   /api/generate/*    → generate.routes
@@ -16,6 +17,7 @@
 
 import { Router, Request, Response } from 'express';
 
+import authRoutes from './auth.routes';
 import resumeRoutes from './resume.routes';
 import analyzeRoutes from './analyze.routes';
 import generateRoutes from './generate.routes';
@@ -33,6 +35,7 @@ router.get('/health', (_req: Request, res: Response) => {
 });
 
 // Feature routes
+router.use('/auth', authRoutes);
 router.use('/resume', resumeRoutes);
 router.use('/analyze', analyzeRoutes);
 router.use('/generate', generateRoutes);
