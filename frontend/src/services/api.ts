@@ -17,24 +17,24 @@ import {
   UploadResumePayload,
   AnalyzePayload,
   GeneratePayload,
-} from "@/types";
+} from '@/types';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // ─── Generic fetch wrapper ───────────────────────────────────
 
 async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${endpoint}`;
 
   const res = await fetch(url, {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options.headers,
     },
-    credentials: "include", // send httpOnly cookies
+    credentials: 'include', // send httpOnly cookies
     ...options,
   });
 
@@ -50,21 +50,21 @@ async function apiRequest<T>(
 // ─── Resume Endpoints ────────────────────────────────────────
 
 export async function uploadResume(payload: UploadResumePayload) {
-  return apiRequest<Resume>("/resume/upload", {
-    method: "POST",
+  return apiRequest<Resume>('/resume/upload', {
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function getResumes() {
-  return apiRequest<Resume[]>("/resume");
+  return apiRequest<Resume[]>('/resume');
 }
 
 // ─── Analysis Endpoints ──────────────────────────────────────
 
 export async function analyzeResume(payload: AnalyzePayload) {
-  return apiRequest<AnalysisResult>("/analyze", {
-    method: "POST",
+  return apiRequest<AnalysisResult>('/analyze', {
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 }
@@ -72,15 +72,15 @@ export async function analyzeResume(payload: AnalyzePayload) {
 // ─── Generation Endpoints ────────────────────────────────────
 
 export async function generateCoverLetter(payload: GeneratePayload) {
-  return apiRequest<GeneratedContent>("/generate/cover-letter", {
-    method: "POST",
+  return apiRequest<GeneratedContent>('/generate/cover-letter', {
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function generateTailoredResume(payload: GeneratePayload) {
-  return apiRequest<GeneratedContent>("/generate/resume", {
-    method: "POST",
+  return apiRequest<GeneratedContent>('/generate/resume', {
+    method: 'POST',
     body: JSON.stringify(payload),
   });
 }
@@ -88,11 +88,11 @@ export async function generateTailoredResume(payload: GeneratePayload) {
 // ─── History Endpoints ───────────────────────────────────────
 
 export async function getHistory() {
-  return apiRequest<AnalysisResult[]>("/history");
+  return apiRequest<AnalysisResult[]>('/history');
 }
 
 // ─── Health Check ────────────────────────────────────────────
 
 export async function healthCheck() {
-  return apiRequest<{ message: string; timestamp: string }>("/health");
+  return apiRequest<{ message: string; timestamp: string }>('/health');
 }
